@@ -1,0 +1,42 @@
+<launch>
+<arg name="robot" default="rossumo1" />
+<arg name="device" default="/dev/input/js0" />
+<arg name="ip_address" default="192.168.2.1" />
+<group ns="$(arg robot)">
+  
+  <!-- Sumo node -->	
+  <node pkg="rossumo" type="rossumo.exe" name="driver" required="true" output="screen">
+    <param name="camera_calibration_filename" value="$(find rossumo)/data/sumo_camera_parameters.yaml"/>
+    <param name="camera_calibration_camname" value="head_camera"/>
+    <param name="ip_address" value="$(arg ip_address)"/>
+    <param name="discovery_port" value="44444"/>
+    <param name="max_vel_lin" value="50"/>
+    <param name="max_vel_ang" value="50"/>
+  </node>
+
+  <!-- Driver for the joystick. -->
+  <node pkg="joy" type="joy_node" name="joy" output="screen" >
+    <param name="dev" value="$(arg device)" />
+    <param name="autorepeat_rate" value="25" />
+  </node>
+
+  <!-- Sumo specific teleoperation driver -->
+  <param name="axis_180_360turn" value="5"/>
+  <param name="axis_90turn" value="3"/>
+  <param name="axis_angular" value="6"/>
+  <param name="axis_linear" value="7"/>
+  <param name="button_anim" value="6"/>
+  <param name="button_high_jump" value="4"/>
+  <param name="button_posture" value="5"/>
+  <param name="scale_angular" value="25"/>
+  <param name="scale_linear" value="50"/>
+
+  <node pkg="rossumo" type="sumo_teleop_joy.exe" name="teleop" output="screen"/>
+
+<!-- $ rosrun image_view image_view image:=/rossumo1/camera/image_raw
+     $ rosrun image_view image_view image:=/rossumo1/camera/image_rect_color -->
+  
+  <node pkg="image_view" type="image_view" output="screen" name="rgb_viewer"
+        args="image:=camera/image_raw"/>
+</group>
+</launch>
